@@ -29,17 +29,14 @@ php artisan l5-swagger:generate
 
 ```bash
 curl "http://localhost:8000/api/products"
-curl "http://localhost:8000/api/products?q=iphone&price_from=500&price_to=1000&in_stock=true"
-curl "http://localhost:8000/api/products?category_id=1&rating_from=4.5&sort=price_asc&per_page=10"
+curl "http://localhost:8000/api/products?q=iphone&price_min=500&price_max=1000"
 ```
 
 ## Фильтры
 
 - `q` — поиск по подстроке в `name`
-- `price_from`, `price_to` — фильтр по цене
+- `price_min`, `price_min` — фильтр по цене
 - `category_id` — фильтр по категории
-- `in_stock` — `true`, `false`, `1` или `0`
-- `rating_from` — минимальный рейтинг от `0` до `5`
 
 ## Сортировка
 
@@ -47,7 +44,6 @@ curl "http://localhost:8000/api/products?category_id=1&rating_from=4.5&sort=pric
 
 - `price_asc`
 - `price_desc`
-- `rating_desc`
 - `newest`
 
 Если сортировка не передана, используется `newest`.

@@ -21,7 +21,8 @@ class ProductIndexRequest extends FormRequest
             'price_min' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'price_max' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'category_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
-            'sort' => ['sometimes', 'nullable', Rule::in(['price_asc', 'price_desc', 'rating_desc', 'newest'])],
+            'sort_field' => ['sometimes', 'nullable', Rule::in(['price', 'created_at'])],
+            'sort_type' => ['sometimes', 'nullable', Rule::in(['asc', 'desc'])],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'page' => ['sometimes', 'integer', 'min:1'],
         ];

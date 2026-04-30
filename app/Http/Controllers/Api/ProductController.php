@@ -41,10 +41,16 @@ class ProductController extends Controller
                 schema: new OA\Schema(type: 'integer', example: 1),
             ),
             new OA\Parameter(
-                name: 'sort',
-                description: 'Сортировка товаров',
+                name: 'sort_field',
+                description: 'Сортировка товаров (поле)',
                 in: 'query',
-                schema: new OA\Schema(type: 'string', enum: ['price_asc', 'price_desc', 'newest'], default: 'newest'),
+                schema: new OA\Schema(type: 'string', enum: ['price', 'created_at'], default: 'price'),
+            ),
+            new OA\Parameter(
+                name: 'sort_type',
+                description: 'Сортировка товаров (direction)',
+                in: 'query',
+                schema: new OA\Schema(type: 'string', enum: ['asc', 'desc'], default: 'asc'),
             ),
             new OA\Parameter(
                 name: 'per_page',
@@ -90,9 +96,9 @@ class ProductController extends Controller
                 $query->where('category_id', $request->input('category_id'))
             );
 
-        match ($validated['sort'] ?? 'newest') {
-            'price_asc' => $products->orderBy('price')->orderBy('id'),
-            'price_desc' => $products->orderByDesc('price')->orderByDesc('id'),
+        match ($validated['sort_field'] ?? null) {
+            'price' => $products->orderBy('price', $validated['sort_type'])->orderBy('id'),
+            'created_at' => $products->orderBy('created_at', $validated['sort_type'])->orderBy('id'),
             default => $products->latest()->orderByDesc('id'),
         };
 

@@ -64,7 +64,7 @@ class ProductSearchTest extends TestCase
             'category_id' => $category->id,
         ]);
 
-        $response = $this->getJson('/api/products?sort=price_asc&per_page=2');
+        $response = $this->getJson('/api/products?sort_field=price&sort_type=asc&per_page=2');
 
         $response
             ->assertOk()
@@ -77,10 +77,10 @@ class ProductSearchTest extends TestCase
 
     public function test_sort_value_must_be_valid(): void
     {
-        $response = $this->getJson('/api/products?sort=random');
+        $response = $this->getJson('/api/products?sort_field=random');
 
         $response
             ->assertUnprocessable()
-            ->assertJsonValidationErrors('sort');
+            ->assertJsonValidationErrors('sort_field');
     }
 }
