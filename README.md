@@ -28,6 +28,8 @@ php artisan l5-swagger:generate
 Как сделать авторизацию и кинуть запрос в Swagger:
 https://cleanshot.com/share/0RNjFQvF
 
+!! Ссылку открывать с VPN
+
 ## Примеры запросов
 
 ```bash
