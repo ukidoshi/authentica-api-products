@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,6 +18,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        User::firstOrCreate(
+            ['email' => 'demo@example.com'],
+            [
+                'name' => 'Demo User',
+                'password' => Hash::make('password'),
+            ],
+        );
+
         $categories = collect(['Phones', 'Laptops', 'Accessories'])
             ->map(fn (string $name) => Category::firstOrCreate(['name' => $name]));
 
@@ -27,24 +37,18 @@ class DatabaseSeeder extends Seeder
             'name' => 'Apple iPhone 15',
             'price' => 799.00,
             'category_id' => $categories[0]->id,
-            'in_stock' => true,
-            'rating' => 4.8,
         ]);
 
         Product::factory()->create([
             'name' => 'Samsung Galaxy S24',
             'price' => 699.00,
             'category_id' => $categories[0]->id,
-            'in_stock' => true,
-            'rating' => 4.6,
         ]);
 
         Product::factory()->create([
             'name' => 'Lenovo ThinkPad E14',
             'price' => 950.00,
             'category_id' => $categories[1]->id,
-            'in_stock' => false,
-            'rating' => 4.4,
         ]);
 
         Product::factory()

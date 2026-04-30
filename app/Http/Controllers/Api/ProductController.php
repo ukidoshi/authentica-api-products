@@ -4,11 +4,20 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductIndexRequest;
+use App\Http\Requests\ProductStoreRequest;
+use App\Http\Requests\ProductUpdateRequest;
 use App\Models\Product;
+use App\Services\ProductService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use OpenApi\Attributes as OA;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private readonly ProductService $products,
+    ) {}
+
     #[OA\Get(
         path: '/api/products',
         operationId: 'products.index',
@@ -80,30 +89,127 @@ class ProductController extends Controller
     )]
     public function index(ProductIndexRequest $request)
     {
-        $validated = $request->validated();
+        return $this->products->paginate($request->validated());
+    }
 
-        $products = Product::query()
-            ->when($request->filled('q'), fn ($query) =>
-                $query->where('name', 'like', '%' . addcslashes($request->input('q'), '%_\\') . '%')
-            )
-            ->when($request->filled('price_max'), fn ($query) =>
-                $query->where('price', '>=', $request->input('price_min'))
-            )
-            ->when($request->filled('price_min'), fn ($query) =>
-                $query->where('price', '<=', $request->input('price_max'))
-            )
-            ->when($request->filled('category_id'), fn ($query) =>
-                $query->where('category_id', $request->input('category_id'))
-            );
+    #[OA\Post(
+        path: '/api/products',
+        operationId: 'products.store',
+        description: 'Создание товара. Авторизация.',
+        summary: 'Создать товар',
+        security: [['bearerAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/ProductStorePayload'),
+        ),
+        tags: ['Products'],
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Created product.',
+                content: new OA\JsonContent(ref: '#/components/schemas/Product'),
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthenticated.',
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Validation error.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ValidationError'),
+            ),
+        ],
+    )]
+    public function store(ProductStoreRequest $request): JsonResponse
+    {
+        $product = $this->products->create($request->validated());
 
-        match ($validated['sort_field'] ?? null) {
-            'price' => $products->orderBy('price', $validated['sort_type'])->orderBy('id'),
-            'created_at' => $products->orderBy('created_at', $validated['sort_type'])->orderBy('id'),
-            default => $products->latest()->orderByDesc('id'),
-        };
+        return response()->json($product, 201);
+    }
 
-        return $products
-            ->paginate((int) ($validated['per_page'] ?? 15))
-            ->withQueryString();
+    #[OA\Put(
+        path: '/api/products/{id}',
+        operationId: 'products.update',
+        description: 'Обновление товара. Авторизация.',
+        summary: 'Обновить товар',
+        security: [['bearerAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/ProductUpdatePayload'),
+        ),
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Product id.',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1),
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Updated product.',
+                content: new OA\JsonContent(ref: '#/components/schemas/Product'),
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthenticated.',
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Product not found.',
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Validation error.',
+                content: new OA\JsonContent(ref: '#/components/schemas/ValidationError'),
+            ),
+        ],
+    )]
+    public function update(ProductUpdateRequest $request, Product $product): JsonResponse
+    {
+        $product = $this->products->update($product, $request->validated());
+
+        return response()->json($product);
+    }
+
+    #[OA\Delete(
+        path: '/api/products/{id}',
+        operationId: 'products.destroy',
+        description: 'Удаление товара. Авторизация.',
+        summary: 'Удалить товар',
+        security: [['bearerAuth' => []]],
+        tags: ['Products'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Product id.',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer', example: 1),
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 204,
+                description: 'Product deleted.',
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthenticated.',
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Product not found.',
+            ),
+        ],
+    )]
+    public function destroy(Product $product): Response
+    {
+        $this->products->delete($product);
+
+        return response()->noContent();
     }
 }

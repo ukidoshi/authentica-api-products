@@ -13,6 +13,49 @@ use OpenApi\Attributes as OA;
     url: 'http://localhost:8000',
     description: '',
 )]
+#[OA\SecurityScheme(
+    securityScheme: 'bearerAuth',
+    type: 'http',
+    scheme: 'bearer',
+    bearerFormat: 'API token',
+)]
+#[OA\Schema(
+    schema: 'LoginPayload',
+    required: ['email', 'password'],
+    properties: [
+        new OA\Property(property: 'email', type: 'string', format: 'email', example: 'demo@example.com'),
+        new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password'),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'AuthToken',
+    required: ['token_type', 'access_token'],
+    properties: [
+        new OA\Property(property: 'token_type', type: 'string', example: 'Bearer'),
+        new OA\Property(property: 'access_token', type: 'string', example: 'bearer-token'),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'ProductStorePayload',
+    required: ['name', 'price', 'category_id'],
+    properties: [
+        new OA\Property(property: 'name', type: 'string', maxLength: 255, example: 'Apple iPhone 15'),
+        new OA\Property(property: 'price', type: 'number', format: 'float', minimum: 0, example: 799.00),
+        new OA\Property(property: 'category_id', type: 'integer', example: 1),
+    ],
+    type: 'object',
+)]
+#[OA\Schema(
+    schema: 'ProductUpdatePayload',
+    properties: [
+        new OA\Property(property: 'name', type: 'string', maxLength: 255, example: 'Apple iPhone 15 Pro'),
+        new OA\Property(property: 'price', type: 'number', format: 'float', minimum: 0, example: 899.00),
+        new OA\Property(property: 'category_id', type: 'integer', example: 1),
+    ],
+    type: 'object',
+)]
 #[OA\Schema(
     schema: 'ProductPagination',
     properties: [
